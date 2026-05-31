@@ -1,0 +1,1813 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINE Bot Admin Dashboard</title>
+    <meta name="description" content="แดชบอร์ดจัดการ LINE Bot - จัดการ Keyword, Rich Menu และผู้ใช้งานได้อย่างง่ายดาย">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================
+           BASE
+        ============================================ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { height: 100%; }
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: #eef2ff;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* ============================================
+           SCROLLBAR
+        ============================================ */
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a5b4fc; }
+
+        /* ============================================
+           APP LAYOUT
+        ============================================ */
+        .app-layout {
+            display: flex;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* ============================================
+           SIDEBAR
+        ============================================ */
+        .sidebar {
+            width: 260px;
+            min-width: 260px;
+            background: linear-gradient(175deg, #0f172a 0%, #1e1b4b 55%, #0f172a 100%);
+            display: flex;
+            flex-direction: column;
+            z-index: 40;
+            transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 4px 0 30px rgba(0,0,0,0.18);
+            overflow: hidden;
+        }
+
+        .sidebar-logo {
+            padding: 22px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #06C755, #00a347);
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(6, 199, 85, 0.38);
+            flex-shrink: 0;
+            font-size: 20px;
+            color: #fff;
+        }
+
+        .sidebar-logo-text h1 {
+            font-size: 15.5px;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+        }
+
+        .sidebar-logo-text p {
+            font-size: 11px;
+            color: rgba(255,255,255,0.35);
+            font-weight: 300;
+            margin-top: 2px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 14px 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .nav-section-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.22);
+            padding: 10px 12px 6px;
+            margin-top: 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 11px 13px;
+            border-radius: 12px;
+            font-size: 13.5px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            border: 1px solid transparent;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            transition: all 0.22s ease;
+            position: relative;
+            font-family: 'Prompt', sans-serif;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.06);
+            color: rgba(255,255,255,0.88);
+            transform: translateX(3px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(99,102,241,0.38), rgba(139,92,246,0.22));
+            color: #fff;
+            font-weight: 600;
+            border-color: rgba(99,102,241,0.3);
+            box-shadow: 0 4px 14px rgba(99,102,241,0.18), inset 0 1px 0 rgba(255,255,255,0.08);
+        }
+
+        .nav-item.active .nav-icon-wrap {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            box-shadow: 0 3px 10px rgba(99,102,241,0.45);
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(180deg, #818cf8, #a78bfa);
+            border-radius: 2px 0 0 2px;
+        }
+
+        .nav-icon-wrap {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.07);
+            flex-shrink: 0;
+            font-size: 13px;
+            transition: all 0.22s ease;
+        }
+
+        .sidebar-footer {
+            padding: 14px 10px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+            flex-shrink: 0;
+        }
+
+        .status-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .status-label-text {
+            font-size: 12px;
+            color: rgba(255,255,255,0.35);
+        }
+
+        .status-badge-inner {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #22c55e;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34,197,94,0.2);
+            animation: pulse-dot 2.2s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { box-shadow: 0 0 0 3px rgba(34,197,94,0.2); }
+            50% { box-shadow: 0 0 0 6px rgba(34,197,94,0.08); }
+        }
+
+        /* ============================================
+           SIDEBAR OVERLAY (Mobile)
+        ============================================ */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 39;
+            backdrop-filter: blur(3px);
+        }
+
+        /* ============================================
+           MAIN CONTENT
+        ============================================ */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        /* ============================================
+           HEADER
+        ============================================ */
+        .main-header {
+            height: 64px;
+            background: #fff;
+            border-bottom: 1px solid #e8edf5;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            justify-content: space-between;
+            z-index: 10;
+            flex-shrink: 0;
+            box-shadow: 0 1px 4px rgba(99,102,241,0.06);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .hamburger-btn {
+            display: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1.5px solid #e2e8f0;
+            background: #f8fafc;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 15px;
+            transition: all 0.18s ease;
+        }
+
+        .hamburger-btn:hover { background: #eef2ff; color: #6366f1; border-color: #c7d2fe; }
+
+        .page-title-wrap .page-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.2;
+        }
+
+        .page-title-wrap .page-subtitle {
+            font-size: 11.5px;
+            color: #94a3b8;
+            font-weight: 400;
+            margin-top: 1px;
+        }
+
+        .header-right { display: flex; align-items: center; gap: 8px; }
+
+        .header-icon-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            border: 1.5px solid #e2e8f0;
+            background: #f8fafc;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            font-size: 15px;
+            transition: all 0.2s ease;
+        }
+
+        .header-icon-btn:hover { background: #eef2ff; color: #6366f1; border-color: #c7d2fe; }
+        .header-icon-btn.spinning i { animation: spin 0.8s linear infinite; }
+
+        /* ============================================
+           CONTENT AREA
+        ============================================ */
+        .content-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px 28px 36px;
+            background: #eef2ff;
+        }
+
+        /* ============================================
+           TAB CONTENT
+        ============================================ */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeInUp 0.3s cubic-bezier(0.4,0,0.2,1) forwards; }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================
+           CONTENT TOOLBAR
+        ============================================ */
+        .content-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+            max-width: 320px;
+            min-width: 0;
+        }
+
+        .search-wrapper .search-icon {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 13px;
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px 10px 37px;
+            border-radius: 12px;
+            border: 1.5px solid #e2e8f0;
+            background: #fff;
+            font-family: 'Prompt', sans-serif;
+            font-size: 13.5px;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        .search-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+        .search-input::placeholder { color: #c4ccd8; }
+
+        /* ============================================
+           BUTTONS
+        ============================================ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-family: 'Prompt', sans-serif;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(99,102,241,0.32);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 7px 22px rgba(99,102,241,0.42); }
+
+        .btn-violet {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(79,70,229,0.32);
+        }
+        .btn-violet:hover { transform: translateY(-2px); box-shadow: 0 7px 22px rgba(79,70,229,0.42); }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1.5px solid #e2e8f0;
+            color: #64748b;
+        }
+        .btn-ghost:hover { background: #f8fafc; color: #334155; border-color: #cbd5e1; }
+
+        .btn-sm { padding: 7px 14px; font-size: 12.5px; border-radius: 9px; }
+
+        .btn-upload {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            box-shadow: 0 3px 10px rgba(99,102,241,0.28);
+        }
+        .btn-upload:hover { transform: translateY(-1px); }
+
+        /* ============================================
+           TABLE CARD
+        ============================================ */
+        .table-card {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid #e4eaf5;
+            overflow: hidden;
+            box-shadow: 0 4px 28px rgba(99,102,241,0.07), 0 1px 4px rgba(0,0,0,0.04);
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+
+        thead tr { background: #f8f9ff; border-bottom: 1.5px solid #eef2ff; }
+
+        thead th {
+            padding: 13px 20px;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.9px;
+            color: #94a3b8;
+            text-align: left;
+        }
+        thead th:last-child { text-align: right; }
+
+        tbody tr { border-bottom: 1px solid #f8f9ff; transition: background 0.14s ease; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: #fafbff; }
+
+        tbody td {
+            padding: 14px 20px;
+            font-size: 13.5px;
+            color: #334155;
+            vertical-align: middle;
+        }
+        tbody td:last-child { text-align: right; }
+
+        /* ============================================
+           BADGES
+        ============================================ */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px;
+            border-radius: 7px;
+            font-size: 11.5px;
+            font-weight: 600;
+            border: 1px solid;
+        }
+
+        .badge-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 11px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 600;
+            border: 1px solid;
+        }
+
+        .b-blue  { background:#eff6ff; color:#3b82f6; border-color:#bfdbfe; }
+        .b-pink  { background:#fdf2f8; color:#ec4899; border-color:#fbcfe8; }
+        .b-purp  { background:#f5f3ff; color:#8b5cf6; border-color:#ddd6fe; }
+        .b-org   { background:#fff7ed; color:#f97316; border-color:#fed7aa; }
+        .b-gray  { background:#f8fafc; color:#64748b; border-color:#e2e8f0; }
+        .b-green { background:#f0fdf4; color:#16a34a; border-color:#bbf7d0; }
+        .b-yell  { background:#fefce8; color:#d97706; border-color:#fde68a; }
+        .b-indi  { background:#eef2ff; color:#4f46e5; border-color:#c7d2fe; }
+        .b-load  { background:#f5f3ff; color:#7c3aed; border-color:#ddd6fe; }
+
+        /* ============================================
+           ACTION BUTTONS
+        ============================================ */
+        .action-btn {
+            width: 31px;
+            height: 31px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            transition: all 0.16s ease;
+        }
+        .action-edit { color: #6366f1; }
+        .action-edit:hover { background: #eef2ff; color: #4338ca; }
+        .action-del { color: #f43f5e; }
+        .action-del:hover { background: #fff1f2; color: #e11d48; }
+
+        .btn-outline-indigo {
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 11.5px;
+            font-weight: 600;
+            border: 1.5px solid #c7d2fe;
+            color: #4f46e5;
+            background: transparent;
+            cursor: pointer;
+            font-family: 'Prompt', sans-serif;
+            transition: all 0.16s ease;
+        }
+        .btn-outline-indigo:hover { background: #eef2ff; }
+
+        /* ============================================
+           EMPTY STATE
+        ============================================ */
+        .empty-state { padding: 56px 20px; text-align: center; }
+        .empty-icon { width: 60px; height: 60px; border-radius: 16px; background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-size: 26px; color: #cbd5e1; margin: 0 auto 14px; }
+        .empty-state p { color: #94a3b8; font-size: 13.5px; }
+
+        /* ============================================
+           MODAL
+        ============================================ */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 16, 40, 0.65);
+            backdrop-filter: blur(7px);
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-backdrop.modal-show { opacity: 1; }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 640px;
+            max-height: 92dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 30px 90px rgba(0,0,0,0.22), 0 0 0 1px rgba(255,255,255,0.08);
+            transform: scale(0.94) translateY(12px);
+            transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-backdrop.modal-show .modal-box { transform: scale(1) translateY(0); }
+
+        .modal-header {
+            padding: 22px 24px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            background: #fff;
+        }
+
+        .modal-title { font-size: 17px; font-weight: 700; color: #1e293b; }
+
+        .modal-close {
+            width: 35px;
+            height: 35px;
+            border-radius: 10px;
+            border: 1.5px solid #e2e8f0;
+            background: #f8fafc;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 15px;
+            transition: all 0.18s ease;
+        }
+        .modal-close:hover { background: #fee2e2; border-color: #fecaca; color: #ef4444; }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 22px 24px;
+            background: #f8f9ff;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: #fff;
+            flex-shrink: 0;
+        }
+
+        /* ============================================
+           FORM
+        ============================================ */
+        .form-section {
+            background: #fff;
+            border: 1.5px solid #e8edf5;
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+
+        .form-section-title {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group:last-child { margin-bottom: 0; }
+
+        .form-label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 7px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'Prompt', sans-serif;
+            font-size: 13.5px;
+            color: #1e293b;
+            background: #fff;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .form-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+        .form-input::placeholder { color: #c4ccd8; }
+
+        .form-select {
+            width: 100%;
+            padding: 10px 36px 10px 14px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'Prompt', sans-serif;
+            font-size: 13.5px;
+            color: #1e293b;
+            background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 12px center;
+            appearance: none;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .form-select:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+
+        .form-select.featured {
+            background-color: #f5f3ff;
+            color: #4f46e5;
+            font-weight: 600;
+            border-color: #c7d2fe;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+        }
+
+        textarea.form-input { resize: vertical; min-height: 90px; line-height: 1.6; }
+        textarea.form-input.mono { font-family: 'Courier New', Courier, monospace; font-size: 12px; background: #f8f9ff; color: #1e293b; }
+
+        .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+        /* ============================================
+           TOGGLE SWITCH
+        ============================================ */
+        .toggle-wrap { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+        .toggle-wrap input { display: none; }
+
+        .toggle-track {
+            width: 42px;
+            height: 23px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            position: relative;
+            transition: background 0.25s ease;
+            flex-shrink: 0;
+        }
+        .toggle-track::after {
+            content: '';
+            position: absolute;
+            left: 3px;
+            top: 3px;
+            width: 17px;
+            height: 17px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+        }
+        .toggle-wrap input:checked + .toggle-track { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+        .toggle-wrap input:checked + .toggle-track::after { transform: translateX(19px); }
+        .toggle-label { font-size: 13.5px; font-weight: 500; color: #374151; }
+
+        /* ============================================
+           UPLOAD AREA
+        ============================================ */
+        .upload-area {
+            border: 2px dashed #c7d2fe;
+            border-radius: 16px;
+            padding: 28px 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #fafbff;
+            transition: all 0.2s ease;
+        }
+        .upload-area:hover { border-color: #6366f1; background: #f0f0ff; }
+
+        /* ============================================
+           INFO BOX
+        ============================================ */
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 12.5px;
+            color: #1d4ed8;
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        /* ============================================
+           TOAST
+        ============================================ */
+        .toast-container {
+            position: fixed;
+            top: 18px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 13px 18px 13px 14px;
+            border-radius: 14px;
+            background: #fff;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.06);
+            font-size: 13.5px;
+            font-weight: 500;
+            color: #1e293b;
+            border: 1px solid #f1f5f9;
+            min-width: 260px;
+            pointer-events: all;
+            animation: toastIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .toast.toast-exit { animation: toastOut 0.22s ease forwards; }
+
+        .toast-icon-wrap {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .t-success .toast-icon-wrap { background:#f0fdf4; color:#16a34a; }
+        .t-error   .toast-icon-wrap { background:#fff1f2; color:#e11d48; }
+        .t-info    .toast-icon-wrap { background:#eff6ff; color:#3b82f6; }
+        .t-loading .toast-icon-wrap { background:#f5f3ff; color:#6366f1; }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(30px) scale(0.95); }
+            to   { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0); }
+            to   { opacity: 0; transform: translateX(30px); }
+        }
+
+        /* ============================================
+           ANIMATIONS
+        ============================================ */
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spin { animation: spin 0.8s linear infinite; }
+
+        /* ============================================
+           RESPONSIVE — Mobile First
+        ============================================ */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0; top: 0; bottom: 0;
+                transform: translateX(-100%);
+            }
+            .sidebar.sidebar-open { transform: translateX(0); }
+            .sidebar-overlay.sidebar-overlay-show { display: block; }
+            .hamburger-btn { display: flex; }
+            .main-header { padding: 0 16px; }
+            .content-area { padding: 18px 14px 28px; }
+            .content-toolbar { gap: 10px; }
+            .search-wrapper { max-width: 100%; width: 100%; flex-basis: 100%; order: 2; }
+            .btn-action-top { order: 1; }
+            .form-grid-2 { grid-template-columns: 1fr; }
+            .hide-mobile { display: none !important; }
+            thead th, tbody td { padding: 11px 14px; }
+            .table-card { border-radius: 16px; }
+            .modal-box { border-radius: 20px; max-height: 95dvh; }
+            .modal-body { padding: 18px; }
+            .modal-header { padding: 18px; }
+            .toast-container { left: 14px; right: 14px; top: 14px; }
+            .toast { min-width: auto; }
+        }
+
+        @media (max-width: 480px) {
+            .page-title-wrap .page-title { font-size: 15px; }
+            .content-area { padding: 14px 10px 24px; }
+            thead th, tbody td { padding: 10px 12px; font-size: 13px; }
+            .modal-body { padding: 14px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- Sidebar Overlay (Mobile) -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<div class="app-layout">
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="sidebar-logo-icon">
+                <i class="fa-brands fa-line"></i>
+            </div>
+            <div class="sidebar-logo-text">
+                <h1>Bot Admin</h1>
+                <p>LINE Official Account</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <span class="nav-section-label">เมนูหลัก</span>
+
+            <button onclick="switchTab('keywords')" id="tab-btn-keywords" class="nav-item active">
+                <div class="nav-icon-wrap"><i class="fa-solid fa-comment-dots"></i></div>
+                จัดการ Keyword
+            </button>
+
+            <button onclick="switchTab('richmenus')" id="tab-btn-richmenus" class="nav-item">
+                <div class="nav-icon-wrap"><i class="fa-solid fa-table-cells-large"></i></div>
+                จัดการ Rich Menu
+            </button>
+
+            <button onclick="switchTab('aliases')" id="tab-btn-aliases" class="nav-item">
+                <div class="nav-icon-wrap"><i class="fa-solid fa-link"></i></div>
+                ระบบ Alias
+            </button>
+
+            <button onclick="switchTab('users')" id="tab-btn-users" class="nav-item">
+                <div class="nav-icon-wrap"><i class="fa-solid fa-users"></i></div>
+                จัดการผู้ใช้
+            </button>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="status-card">
+                <span class="status-label-text">สถานะระบบ</span>
+                <div id="system-status" class="status-badge-inner">
+                    <div class="status-dot"></div>
+                    <span>Online</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content">
+
+        <!-- Header -->
+        <header class="main-header">
+            <div class="header-left">
+                <button class="hamburger-btn" id="hamburger-btn" onclick="toggleSidebar()">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="page-title-wrap">
+                    <div class="page-title" id="page-title">จัดการ Keyword ตอบกลับ</div>
+                    <div class="page-subtitle" id="page-subtitle">ตั้งค่าการตอบกลับอัตโนมัติ</div>
+                </div>
+            </div>
+            <div class="header-right">
+                <button onclick="fetchDataFromGAS()" class="header-icon-btn" title="รีเฟรชข้อมูล" id="refresh-btn">
+                    <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="content-area">
+
+            <!-- Tab: Keywords -->
+            <div id="tab-keywords" class="tab-content active">
+                <div class="content-toolbar">
+                    <div class="search-wrapper">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="search-keyword" onkeyup="renderKeywords()" placeholder="ค้นหา Keyword..." class="search-input">
+                    </div>
+                    <button onclick="openKeywordModal()" class="btn btn-primary btn-action-top">
+                        <i class="fa-solid fa-plus"></i> เพิ่ม Keyword
+                    </button>
+                </div>
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Keyword</th>
+                                <th class="hide-mobile">Match Type</th>
+                                <th>ประเภทข้อความ</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="keywords-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Rich Menus -->
+            <div id="tab-richmenus" class="tab-content">
+                <div class="content-toolbar">
+                    <div class="search-wrapper">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="search-richmenu" onkeyup="renderRichMenus()" placeholder="ค้นหาชื่อ Rich Menu..." class="search-input">
+                    </div>
+                    <button onclick="openRichMenuModal()" class="btn btn-violet btn-action-top">
+                        <i class="fa-solid fa-plus"></i> สร้าง Rich Menu
+                    </button>
+                </div>
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:72px">ภาพปก</th>
+                                <th>ชื่อ (ID)</th>
+                                <th class="hide-mobile">สถานะ</th>
+                                <th class="hide-mobile">วันที่สร้าง</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="richmenus-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Aliases -->
+            <div id="tab-aliases" class="tab-content">
+                <div class="info-box" style="margin-bottom: 24px; padding: 20px; border-radius: 16px;">
+                    <div style="display:flex; gap:12px; margin-bottom: 12px;">
+                        <i class="fa-regular fa-lightbulb" style="color:#eab308; font-size:20px; flex-shrink:0;"></i>
+                        <div style="font-weight:700; color:#1e293b; font-size:15px;">วิธีการเชื่อม Rich Menu (สลับหน้า)</div>
+                    </div>
+                    <ol style="margin-left: 32px; color:#475569; font-size:13.5px; line-height:1.7;">
+                        <li>คุณต้องสร้าง Rich Menu อย่างน้อย 2 ตัว (เช่น Menu A และ Menu B)</li>
+                        <li>ตั้งชื่อ Alias ID ให้กับ Menu B (เช่น menu-b) ด้านล่างนี้</li>
+                        <li>ใน JSON ของ Menu A ตรงพื้นที่ที่ต้องการให้คลิกแล้วเปลี่ยนหน้า ให้ใส่โค้ด Action แบบนี้:</li>
+                    </ol>
+                    <div style="margin-top:16px; background:#0f172a; padding: 16px; border-radius: 12px; overflow-x:auto;">
+<pre style="color:#e2e8f0; font-family:'Courier New', monospace; font-size:13px; line-height:1.5; margin:0;">
+"action": {
+  "type": "richmenuswitch",
+  "richMenuAliasId": "menu-b",
+  "data": "user-switched-to-b"
+}
+</pre>
+                    </div>
+                </div>
+
+                <div class="form-grid-2" style="gap:24px; align-items:start;">
+                    <!-- Left: Create Form -->
+                    <div class="table-card" style="padding: 24px;">
+                        <div style="font-weight:700; color:#1e293b; font-size:15px; margin-bottom: 20px;">สร้าง Alias ใหม่</div>
+                        <div class="form-group">
+                            <input type="text" id="form-alias-id" placeholder="ตั้งชื่อ Alias (เช่น menu-a, menu-b)" class="form-input" style="background:#f8fafc;">
+                        </div>
+                        <div class="form-group" style="margin-top: 16px;">
+                            <input type="text" id="form-alias-rm" placeholder="ใส่ Rich Menu ID (เช่น richmenu-xxx)" class="form-input" style="background:#f8fafc;">
+                        </div>
+                        <button onclick="createAlias()" id="btn-save-alias" class="btn btn-primary" style="width:100%; margin-top: 20px; justify-content:center; background:#10b981; box-shadow:0 4px 14px rgba(16,185,129,0.32);">
+                            <i class="fa-solid fa-link"></i> ผูก Alias
+                        </button>
+                    </div>
+
+                    <!-- Right: List -->
+                    <div class="table-card" style="padding: 24px; min-height:260px;">
+                        <div style="font-weight:700; color:#1e293b; font-size:15px; margin-bottom: 20px;">รายการ Alias ปัจจุบัน</div>
+                        <div id="aliases-list-container">
+                            <div style="color:#94a3b8; font-size:13.5px; padding:20px 0; text-align:center;">
+                                <i class="fa-solid fa-spinner spin" style="margin-right:6px;"></i> กำลังโหลดข้อมูล...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Users -->
+            <div id="tab-users" class="tab-content">
+                <div class="content-toolbar">
+                    <div class="search-wrapper">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="search-user" onkeyup="renderUsers()" placeholder="ค้นหาชื่อผู้ใช้ หรือ ID..." class="search-input">
+                    </div>
+                </div>
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>โปรไฟล์</th>
+                                <th class="hide-mobile">สถานะข้อความ</th>
+                                <th class="hide-mobile">วันที่เพิ่มเพื่อน</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</div>
+
+<!-- ======================== MODAL: Keyword ======================== -->
+<div id="keyword-modal" class="modal-backdrop" style="display:none;">
+    <div class="modal-box" id="keyword-modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modal-title">เพิ่ม Keyword ใหม่</h3>
+            <button onclick="closeKeywordModal()" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="modal-body">
+            <input type="hidden" id="original-keyword">
+
+            <div class="form-section">
+                <div class="form-section-title"><i class="fa-solid fa-sliders"></i> การตั้งค่า Keyword</div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">คำค้นหา (Keyword)</label>
+                        <input type="text" id="form-keyword" placeholder="เช่น โปรโมชั่น, สวัสดี" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">รูปแบบการเช็ค (Match Type)</label>
+                        <select id="form-matchtype" class="form-select">
+                            <option value="exact">🎯 พิมพ์เป๊ะๆ (Exact)</option>
+                            <option value="contains">🔍 มีคำนี้ผสมอยู่ (Contains)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title"><i class="fa-solid fa-message"></i> ประเภทการตอบกลับ</div>
+                <div class="form-group">
+                    <label class="form-label">ประเภทข้อความ (Message Type)</label>
+                    <select id="form-msgtype" onchange="toggleFormInputs()" class="form-select featured">
+                        <option value="text">💬 ข้อความธรรมดา (Text)</option>
+                        <option value="image">🖼️ รูปภาพ (Image)</option>
+                        <option value="flex">📱 Flex Message (จาก Simulator)</option>
+                        <option value="imagemap">🗺️ Imagemap (ภาพแผนที่แบบกดได้)</option>
+                        <option value="raw">⚙️ JSON ขั้นสูง (Raw Payload)</option>
+                    </select>
+                </div>
+                <label class="toggle-wrap">
+                    <input type="checkbox" id="form-show-loading">
+                    <div class="toggle-track"></div>
+                    <span class="toggle-label">⏳ แสดง Animation กำลังพิมพ์ (Loading)</span>
+                </label>
+            </div>
+
+            <!-- 1. Text -->
+            <div id="input-group-text" class="input-group">
+                <div class="form-group">
+                    <label class="form-label">ข้อความที่ต้องการตอบกลับ</label>
+                    <textarea id="form-text-input" rows="4" placeholder="พิมพ์ข้อความที่ต้องการให้บอทตอบ..." class="form-input"></textarea>
+                </div>
+            </div>
+
+            <!-- 2. Image -->
+            <div id="input-group-image" class="input-group" style="display:none">
+                <div class="form-group">
+                    <label class="form-label">URL รูปภาพจริง (Original Content URL)</label>
+                    <input type="url" id="form-img-original" placeholder="https://..." class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">URL รูปภาพตัวอย่าง (Preview Image URL)</label>
+                    <input type="url" id="form-img-preview" placeholder="https://..." class="form-input">
+                </div>
+            </div>
+
+            <!-- 3. Flex -->
+            <div id="input-group-flex" class="input-group" style="display:none">
+                <div class="form-group">
+                    <label class="form-label">ข้อความแจ้งเตือน (Alt Text)</label>
+                    <input type="text" id="form-flex-alt" placeholder="เช่น คุณได้รับโปรโมชั่นใหม่!" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">JSON จาก Flex Message Simulator</label>
+                    <textarea id="form-flex-json" rows="6" placeholder='วางโค้ด JSON (เช่น { "type": "bubble", ... })' class="form-input mono"></textarea>
+                </div>
+            </div>
+
+            <!-- 4. Imagemap -->
+            <div id="input-group-imagemap" class="input-group" style="display:none">
+                <div class="info-box">
+                    <i class="fa-solid fa-circle-info" style="flex-shrink:0;margin-top:1px;"></i>
+                    <div>อัปโหลดรูปภาพที่นี่ ระบบจะนำไปแปลงเป็น Base URL พิเศษให้ใช้งานกับ Imagemap ได้ทันที (Google Drive ทริค)</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">1. ภาพสำหรับ Imagemap (แนะนำความกว้าง 1040px)</label>
+                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                        <input type="file" id="form-im-image" accept="image/jpeg, image/png" style="font-size:12.5px;flex:1;min-width:0;">
+                        <button type="button" onclick="uploadImagemapImage()" id="btn-upload-im" class="btn btn-sm btn-upload" style="flex-shrink:0;">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> อัปโหลด
+                        </button>
+                    </div>
+                    <input type="text" id="form-im-baseurl" placeholder="เมื่ออัปโหลดสำเร็จ Base URL จะขึ้นที่นี่..." class="form-input mono" style="margin-top:10px;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">2. ข้อความแจ้งเตือน (Alt Text)</label>
+                    <input type="text" id="form-im-alt" placeholder="เช่น เมนูหลักมาแล้ว!" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">3. JSON ส่วนของการคลิก Actions (จาก Bot Designer)</label>
+                    <textarea id="form-im-actions" rows="5" placeholder='[ { "type": "uri", "linkUri": "https://...", "area": { "x": 0, "y": 0, "width": 520, "height": 520 } } ]' class="form-input mono"></textarea>
+                </div>
+            </div>
+
+            <!-- 5. Raw JSON -->
+            <div id="input-group-raw" class="input-group" style="display:none">
+                <div class="form-group">
+                    <label class="form-label">JSON Payload (เต็มรูปแบบ)</label>
+                    <textarea id="form-raw-json" rows="7" placeholder='[ { "type": "text", "text": "สวัสดี" } ]' class="form-input mono"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button onclick="closeKeywordModal()" class="btn btn-ghost">ยกเลิก</button>
+            <button onclick="saveKeyword()" id="btn-save-kw" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูล
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======================== MODAL: Rich Menu ======================== -->
+<div id="richmenu-modal" class="modal-backdrop" style="display:none;">
+    <div class="modal-box" id="richmenu-modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">สร้าง Rich Menu ใหม่</h3>
+            <button onclick="closeRichMenuModal()" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="modal-body">
+            <div class="form-section">
+                <div class="form-section-title"><i class="fa-solid fa-code"></i> ข้อมูล Rich Menu</div>
+                <div class="form-group">
+                    <label class="form-label">JSON Object (จาก Bot Designer)</label>
+                    <textarea id="form-rm-json" rows="6" class="form-input mono" placeholder='{ "size": { "width": 2500, "height": 1686 }, "areas": [...] }'></textarea>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title"><i class="fa-solid fa-image"></i> รูปภาพ Rich Menu (JPEG/PNG)</div>
+                <div class="upload-area" onclick="document.getElementById('form-rm-image').click()">
+                    <i class="fa-regular fa-image" id="rm-img-icon" style="font-size:36px;color:#c7d2fe;"></i>
+                    <img id="rm-img-preview" src="" alt="" style="display:none;max-height:120px;margin:0 auto 12px;border-radius:10px;object-fit:contain;">
+                    <div style="font-size:13.5px;color:#64748b;margin-top:10px;">
+                        <span style="color:#6366f1;font-weight:600;">คลิกเพื่ออัปโหลดไฟล์ภาพ</span><br>
+                        <span style="font-size:12px;color:#94a3b8;">JPEG หรือ PNG ขนาดไม่เกิน 1MB</span>
+                    </div>
+                    <input id="form-rm-image" type="file" style="display:none" accept="image/jpeg, image/png" onchange="previewRichMenuImage(event)">
+                </div>
+            </div>
+
+            <label class="toggle-wrap" style="padding: 4px 0;">
+                <input type="checkbox" id="form-rm-default">
+                <div class="toggle-track"></div>
+                <span class="toggle-label">🌟 ตั้งค่าเป็น Rich Menu เริ่มต้นของบอททันที</span>
+            </label>
+        </div>
+
+        <div class="modal-footer">
+            <button onclick="closeRichMenuModal()" class="btn btn-ghost">ยกเลิก</button>
+            <button onclick="submitRichMenu()" id="btn-save-rm" class="btn btn-violet">
+                <i class="fa-solid fa-cloud-arrow-up" id="rm-save-icon"></i>
+                <span id="rm-save-text">สร้าง และ อัปโหลด</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ======================== SCRIPT ======================== -->
+<script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz2O75-XEHs_t-Eje-rpWvqU-CDXkcCpYsu2Tn8UJmwm9ha64xVTtbGhOrEEEjkfoTW/exec';
+    let appData = { keywords: [], users: [], richMenus: [], aliases: [] };
+    let isOnline = false;
+    let selectedRichMenuBase64 = null;
+
+    window.onload = () => { fetchDataFromGAS(); };
+
+    /* ======== SIDEBAR MOBILE ======== */
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('sidebar-open');
+        document.getElementById('sidebar-overlay').classList.toggle('sidebar-overlay-show');
+    }
+    function closeSidebar() {
+        document.getElementById('sidebar').classList.remove('sidebar-open');
+        document.getElementById('sidebar-overlay').classList.remove('sidebar-overlay-show');
+    }
+
+    /* ======== TOAST ======== */
+    function showToast(message, type = 'info', duration = 3200) {
+        const container = document.getElementById('toast-container');
+        const icons = {
+            success: '<i class="fa-solid fa-check"></i>',
+            error:   '<i class="fa-solid fa-xmark"></i>',
+            info:    '<i class="fa-solid fa-circle-info"></i>',
+            loading: '<i class="fa-solid fa-spinner spin"></i>'
+        };
+        const el = document.createElement('div');
+        el.className = `toast t-${type}`;
+        el.innerHTML = `<div class="toast-icon-wrap">${icons[type] || icons.info}</div><div style="flex:1;line-height:1.4">${message}</div>`;
+        container.appendChild(el);
+        if (duration > 0) {
+            setTimeout(() => {
+                el.classList.add('toast-exit');
+                setTimeout(() => el.remove(), 240);
+            }, duration);
+        }
+        return el;
+    }
+
+    /* ======== TAB SWITCHING ======== */
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+
+        const cfg = {
+            keywords:  ['จัดการ Keyword ตอบกลับ', 'ตั้งค่าการตอบกลับอัตโนมัติ'],
+            richmenus: ['จัดการ Rich Menu', 'สร้างและจัดการภาพปก Rich Menu'],
+            aliases:   ['ระบบ Alias', 'เชื่อมโยง Rich Menu สำหรับสลับหน้า'],
+            users:     ['จัดการผู้ใช้', 'รายชื่อผู้ติดตาม LINE Bot']
+        };
+        document.getElementById('page-title').innerText = cfg[tabName][0];
+        document.getElementById('page-subtitle').innerText = cfg[tabName][1];
+        closeSidebar();
+    }
+
+    /* ======== FETCH DATA ======== */
+    async function fetchDataFromGAS() {
+        if (SCRIPT_URL.includes('ใส่_URL')) return;
+        const btn = document.getElementById('refresh-btn');
+        btn.classList.add('spinning');
+        try {
+            const res = await fetch(`${SCRIPT_URL}?action=getData`);
+            const json = await res.json();
+            if (json.status === 'success') {
+                appData = json.data;
+                isOnline = true;
+                document.getElementById('system-status').innerHTML =
+                    `<div class="status-dot"></div><span>Online (API)</span>`;
+                renderKeywords(); renderRichMenus(); renderUsers(); renderAliases();
+                showToast('โหลดข้อมูลสำเร็จ', 'success', 2200);
+            }
+        } catch (e) {
+            document.getElementById('system-status').innerHTML =
+                `<div class="status-dot" style="background:#f43f5e;box-shadow:0 0 0 3px rgba(244,63,94,0.2);"></div><span style="color:#f43f5e;">Offline</span>`;
+        } finally {
+            btn.classList.remove('spinning');
+        }
+    }
+
+    /* ======== TOGGLE FORM INPUTS ======== */
+    function toggleFormInputs() {
+        const msgType = document.getElementById('form-msgtype').value;
+        document.querySelectorAll('.input-group').forEach(el => el.style.display = 'none');
+        document.getElementById(`input-group-${msgType}`).style.display = 'block';
+    }
+
+    /* ======== UPLOAD IMAGEMAP IMAGE ======== */
+    async function uploadImagemapImage() {
+        const fileInput = document.getElementById('form-im-image');
+        const file = fileInput.files[0];
+        if (!file) return showToast('กรุณาเลือกไฟล์รูปภาพก่อนครับ', 'error');
+        const btn = document.getElementById('btn-upload-im');
+        const loadingToast = showToast('กำลังอัปโหลดรูปภาพ...', 'loading', 0);
+        btn.disabled = true;
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'uploadImagemapImage', imageBase64: e.target.result }) });
+                const result = await res.json();
+                loadingToast.remove();
+                if (result.status === 'success') {
+                    document.getElementById('form-im-baseurl').value = result.baseUrl;
+                    showToast('อัปโหลดรูปภาพสำเร็จ!', 'success');
+                } else {
+                    showToast('Error: ' + result.message, 'error');
+                }
+            } catch (err) {
+                loadingToast.remove();
+                showToast('เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
+            } finally { btn.disabled = false; }
+        };
+        reader.readAsDataURL(file);
+    }
+
+    /* ======== BUILD PAYLOAD FROM FORM ======== */
+    function buildPayloadFromForm() {
+        const msgType = document.getElementById('form-msgtype').value;
+        const showLoading = document.getElementById('form-show-loading').checked;
+        let payloadObj = [];
+        try {
+            if (msgType === 'text') {
+                payloadObj = [{ type: "text", text: document.getElementById('form-text-input').value.trim() }];
+            } else if (msgType === 'image') {
+                payloadObj = [{ type: "image", originalContentUrl: document.getElementById('form-img-original').value.trim(), previewImageUrl: document.getElementById('form-img-preview').value.trim() }];
+            } else if (msgType === 'flex') {
+                const altText = document.getElementById('form-flex-alt').value.trim() || "คุณได้รับข้อความใหม่";
+                payloadObj = [{ type: "flex", altText: altText, contents: JSON.parse(document.getElementById('form-flex-json').value.trim()) }];
+            } else if (msgType === 'imagemap') {
+                const baseUrl = document.getElementById('form-im-baseurl').value.trim();
+                const altText = document.getElementById('form-im-alt').value.trim() || "Imagemap";
+                const actionsStr = document.getElementById('form-im-actions').value.trim();
+                if (!baseUrl) throw new Error("กรุณาอัปโหลดรูปภาพเพื่อให้ระบบสร้าง Base URL ให้ก่อนครับ");
+                if (!actionsStr) throw new Error("กรุณาวางโค้ด JSON ส่วนของ actions");
+                payloadObj = [{ type: "imagemap", baseUrl: baseUrl, altText: altText, baseSize: { width: 1040, height: 1040 }, actions: JSON.parse(actionsStr) }];
+            } else if (msgType === 'raw') {
+                return JSON.stringify(JSON.parse(document.getElementById('form-raw-json').value.trim()));
+            }
+            if (showLoading) return JSON.stringify({ showLoading: true, messages: payloadObj });
+            return JSON.stringify(payloadObj);
+        } catch (err) {
+            showToast("เกิดข้อผิดพลาด: " + err.message, 'error');
+            return null;
+        }
+    }
+
+    /* ======== PARSE PAYLOAD TO FORM ======== */
+    function parsePayloadToForm(payloadStr) {
+        try {
+            const parsedObj = JSON.parse(payloadStr);
+            let messagesObj = parsedObj;
+            let showLoading = false;
+            if (!Array.isArray(parsedObj) && parsedObj.messages) {
+                messagesObj = parsedObj.messages;
+                showLoading = parsedObj.showLoading || false;
+            }
+            document.getElementById('form-show-loading').checked = showLoading;
+            const firstMsg = messagesObj[0];
+            if (firstMsg.type === 'text' && messagesObj.length === 1) {
+                document.getElementById('form-msgtype').value = 'text';
+                document.getElementById('form-text-input').value = firstMsg.text;
+            } else if (firstMsg.type === 'image' && messagesObj.length === 1) {
+                document.getElementById('form-msgtype').value = 'image';
+                document.getElementById('form-img-original').value = firstMsg.originalContentUrl;
+                document.getElementById('form-img-preview').value = firstMsg.previewImageUrl;
+            } else if (firstMsg.type === 'flex' && messagesObj.length === 1) {
+                document.getElementById('form-msgtype').value = 'flex';
+                document.getElementById('form-flex-alt').value = firstMsg.altText || '';
+                document.getElementById('form-flex-json').value = JSON.stringify(firstMsg.contents, null, 2);
+            } else if (firstMsg.type === 'imagemap' && messagesObj.length === 1) {
+                document.getElementById('form-msgtype').value = 'imagemap';
+                document.getElementById('form-im-baseurl').value = firstMsg.baseUrl || '';
+                document.getElementById('form-im-alt').value = firstMsg.altText || '';
+                document.getElementById('form-im-actions').value = JSON.stringify(firstMsg.actions, null, 2);
+            } else {
+                document.getElementById('form-msgtype').value = 'raw';
+                document.getElementById('form-raw-json').value = payloadStr;
+            }
+        } catch (e) {
+            document.getElementById('form-msgtype').value = 'raw';
+            document.getElementById('form-raw-json').value = payloadStr;
+        }
+        toggleFormInputs();
+    }
+
+    /* ======== KEYWORD MODAL ======== */
+    function openKeywordModal(editKeyword = null) {
+        ['form-keyword','form-text-input','form-img-original','form-img-preview',
+         'form-flex-alt','form-flex-json','form-im-baseurl','form-im-alt',
+         'form-im-actions','form-raw-json','original-keyword'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        document.getElementById('form-matchtype').value = 'exact';
+        document.getElementById('form-msgtype').value = 'text';
+        document.getElementById('form-show-loading').checked = false;
+        toggleFormInputs();
+
+        const modal = document.getElementById('keyword-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('modal-show'), 10);
+
+        if (editKeyword) {
+            document.getElementById('modal-title').innerText = "แก้ไข Keyword";
+            const kwObj = appData.keywords.find(k => k.keyword === editKeyword);
+            if (kwObj) {
+                document.getElementById('original-keyword').value = kwObj.keyword;
+                document.getElementById('form-keyword').value = kwObj.keyword;
+                document.getElementById('form-matchtype').value = kwObj.matchType;
+                parsePayloadToForm(kwObj.payload);
+            }
+        } else {
+            document.getElementById('modal-title').innerText = "เพิ่ม Keyword ใหม่";
+        }
+    }
+
+    function closeKeywordModal() {
+        const modal = document.getElementById('keyword-modal');
+        modal.classList.remove('modal-show');
+        setTimeout(() => { modal.style.display = 'none'; }, 300);
+    }
+
+    /* ======== SAVE KEYWORD ======== */
+    async function saveKeyword() {
+        const originalKw = document.getElementById('original-keyword').value;
+        const kw = document.getElementById('form-keyword').value.trim();
+        const mt = document.getElementById('form-matchtype').value;
+        if (!kw) return showToast('กรุณากรอก Keyword', 'error');
+        const finalPayload = buildPayloadFromForm();
+        if (!finalPayload) return;
+        const newObj = { keyword: kw, matchType: mt, payload: finalPayload };
+        if (originalKw) {
+            const idx = appData.keywords.findIndex(k => k.keyword === originalKw);
+            if (idx !== -1) appData.keywords[idx] = newObj;
+        } else { appData.keywords.push(newObj); }
+        renderKeywords();
+        closeKeywordModal();
+        showToast(originalKw ? 'แก้ไข Keyword สำเร็จ!' : 'เพิ่ม Keyword ใหม่สำเร็จ!', 'success');
+        if (isOnline) {
+            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'saveKeyword', originalKw, keyword: kw, matchType: mt, payload: finalPayload }) });
+        }
+    }
+
+    /* ======== DELETE KEYWORD ======== */
+    async function deleteKeyword(kw) {
+        if (!confirm(`ยืนยันการลบ Keyword: ${kw} ?`)) return;
+        appData.keywords = appData.keywords.filter(k => k.keyword !== kw);
+        renderKeywords();
+        showToast(`ลบ Keyword "${kw}" สำเร็จ`, 'success');
+        if (isOnline) await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteKeyword', id: kw }) });
+    }
+
+    /* ======== RENDER KEYWORDS ======== */
+    function renderKeywords() {
+        const search = document.getElementById('search-keyword').value.toLowerCase();
+        const tbody = document.getElementById('keywords-table-body');
+        const filtered = appData.keywords.filter(k => k.keyword.toLowerCase().includes(search));
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-comment-slash"></i></div><p>ไม่พบข้อมูล Keyword</p></div></td></tr>`;
+            return;
+        }
+        tbody.innerHTML = filtered.map(k => {
+            let msgBadge = `<span class="badge b-gray"><i class="fa-solid fa-code"></i>Raw JSON</span>`;
+            let loadBadge = '';
+            try {
+                const p = JSON.parse(k.payload);
+                const isWrapped = !Array.isArray(p) && p.messages;
+                const msgs = isWrapped ? p.messages : p;
+                if (isWrapped && p.showLoading) loadBadge = `<span class="badge b-load" style="margin-left:5px;"><i class="fa-solid fa-spinner spin"></i>Loading</span>`;
+                if (msgs[0]?.type === 'text')     msgBadge = `<span class="badge b-blue"><i class="fa-solid fa-font"></i>Text</span>`;
+                else if (msgs[0]?.type === 'image')    msgBadge = `<span class="badge b-pink"><i class="fa-solid fa-image"></i>Image</span>`;
+                else if (msgs[0]?.type === 'flex')     msgBadge = `<span class="badge b-purp"><i class="fa-solid fa-mobile-screen"></i>Flex</span>`;
+                else if (msgs[0]?.type === 'imagemap') msgBadge = `<span class="badge b-org"><i class="fa-solid fa-map"></i>Imagemap</span>`;
+            } catch(e) {}
+            const matchBadge = k.matchType === 'exact'
+                ? `<span class="badge-pill b-green"><i class="fa-solid fa-crosshairs"></i>Exact</span>`
+                : `<span class="badge-pill b-yell"><i class="fa-solid fa-magnifying-glass"></i>Contains</span>`;
+            const kwSafe = k.keyword.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+            return `
+                <tr>
+                    <td style="font-weight:600;color:#1e293b;">${k.keyword}</td>
+                    <td class="hide-mobile">${matchBadge}</td>
+                    <td><div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">${msgBadge}${loadBadge}</div></td>
+                    <td>
+                        <div style="display:flex;align-items:center;justify-content:flex-end;gap:3px;">
+                            <button onclick="openKeywordModal('${kwSafe}')" class="action-btn action-edit" title="แก้ไข"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteKeyword('${kwSafe}')" class="action-btn action-del" title="ลบ"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>`;
+        }).join('');
+    }
+
+    /* ======== RICH MENU MODAL ======== */
+    function openRichMenuModal() {
+        document.getElementById('form-rm-json').value = '';
+        document.getElementById('form-rm-image').value = '';
+        document.getElementById('rm-img-preview').src = '';
+        document.getElementById('rm-img-preview').style.display = 'none';
+        document.getElementById('rm-img-icon').style.display = 'block';
+        document.getElementById('form-rm-default').checked = false;
+        selectedRichMenuBase64 = null;
+        const modal = document.getElementById('richmenu-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('modal-show'), 10);
+    }
+
+    function closeRichMenuModal() {
+        const modal = document.getElementById('richmenu-modal');
+        modal.classList.remove('modal-show');
+        setTimeout(() => { modal.style.display = 'none'; }, 300);
+    }
+
+    function previewRichMenuImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (file.size > 1024 * 1024) return showToast('ไฟล์ขนาดใหญ่เกินไป กรุณาใช้ไฟล์ไม่เกิน 1MB', 'error');
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            selectedRichMenuBase64 = e.target.result;
+            const prev = document.getElementById('rm-img-preview');
+            prev.src = selectedRichMenuBase64;
+            prev.style.display = 'block';
+            document.getElementById('rm-img-icon').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function submitRichMenu() {
+        const jsonStr = document.getElementById('form-rm-json').value.trim();
+        const setAsDefault = document.getElementById('form-rm-default').checked;
+        if (!jsonStr || !selectedRichMenuBase64) return showToast('กรุณาใส่ข้อมูลให้ครบ', 'error');
+        let parsedJson;
+        try { parsedJson = JSON.parse(jsonStr); if (!parsedJson.size || !parsedJson.areas) throw new Error(); } catch(e) { return showToast('JSON ไม่ถูกต้อง กรุณาตรวจสอบ format', 'error'); }
+        if (!isOnline) return closeRichMenuModal();
+        const btn = document.getElementById('btn-save-rm');
+        btn.innerHTML = '<i class="fa-solid fa-spinner spin"></i><span>กำลังสร้าง...</span>';
+        btn.disabled = true;
+        const loadingToast = showToast('กำลังสร้าง Rich Menu...', 'loading', 0);
+        try {
+            const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'createRichMenu', payload: parsedJson, imageBase64: selectedRichMenuBase64, setAsDefault }) });
+            const result = await response.json();
+            loadingToast.remove();
+            if (result.status === 'success') {
+                await fetchDataFromGAS();
+                closeRichMenuModal();
+                showToast('สร้าง Rich Menu สำเร็จ!', 'success');
+            } else { showToast('Error: ' + result.message, 'error'); }
+        } catch (error) {
+            loadingToast.remove();
+            showToast('เชื่อมต่อผิดพลาด', 'error');
+        } finally {
+            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i><span>สร้าง และ อัปโหลด</span>';
+            btn.disabled = false;
+        }
+    }
+
+    async function deleteRichMenu(id, name) {
+        if (!confirm(`ยืนยันการลบ Rich Menu: ${name || id} ?`)) return;
+        appData.richMenus = appData.richMenus.filter(r => r.richMenuId !== id);
+        renderRichMenus();
+        showToast(`ลบ Rich Menu "${name || id}" สำเร็จ`, 'success');
+        if (isOnline) await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteRichMenu', id }) });
+    }
+
+    async function setDefaultRichMenu(id, name) {
+        if (!confirm(`ต้องการตั้งค่าให้ [${name || id}] เป็นค่าเริ่มต้นหรือไม่?`)) return;
+        appData.richMenus = appData.richMenus.map(r => ({ ...r, status: r.richMenuId === id ? 'Default' : 'Active' }));
+        renderRichMenus();
+        showToast('ตั้งค่า Default Rich Menu สำเร็จ', 'success');
+        if (isOnline) await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'setDefaultRichMenu', id }) });
+    }
+
+    /* ======== COPY TO CLIPBOARD ======== */
+    function copyToClipboard(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => showToast('คัดลอก ID เรียบร้อย', 'success', 2000));
+        } else {
+            const input = document.createElement('input');
+            input.value = text;
+            input.style.position = 'fixed';
+            input.style.opacity = '0';
+            document.body.appendChild(input);
+            input.select();
+            try {
+                document.execCommand('copy');
+                showToast('คัดลอก ID เรียบร้อย', 'success', 2000);
+            } catch (err) {
+                showToast('ไม่สามารถคัดลอกได้', 'error');
+            }
+            document.body.removeChild(input);
+        }
+    }
+
+    /* ======== RENDER RICH MENUS ======== */
+    function renderRichMenus() {
+        const search = document.getElementById('search-richmenu').value.toLowerCase();
+        const tbody = document.getElementById('richmenus-table-body');
+        const filtered = (appData.richMenus || []).filter(r => (r.name || '').toLowerCase().includes(search) || r.richMenuId.toLowerCase().includes(search));
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-table-cells-large"></i></div><p>ยังไม่มีข้อมูล Rich Menu</p></div></td></tr>`;
+            return;
+        }
+        tbody.innerHTML = filtered.map(r => {
+            const date = new Date(r.date).toLocaleDateString('th-TH', { year: '2-digit', month: 'short', day: 'numeric' });
+            const isDefault = r.status === 'Default';
+            const statusBadge = isDefault
+                ? `<span class="badge b-indi"><i class="fa-solid fa-star"></i>Default</span>`
+                : `<span class="badge b-gray">Active</span>`;
+            let displayUrl = r.driveUrl;
+            if (displayUrl && displayUrl.includes('drive.google.com/uc')) {
+                const match = displayUrl.match(/id=([^&]+)/);
+                if (match && match[1]) displayUrl = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w500`;
+            }
+            return `
+                <tr>
+                    <td><div style="width:54px;height:34px;border-radius:8px;overflow:hidden;background:#f1f5f9;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;">
+                        ${displayUrl ? `<img src="${displayUrl}" style="width:100%;height:100%;object-fit:cover;" referrerpolicy="no-referrer">` : `<i class="fa-solid fa-image" style="color:#cbd5e1;font-size:14px;"></i>`}
+                    </div></td>
+                    <td>
+                        <div style="font-weight:600;color:#1e293b;font-size:13.5px;">${r.name || 'ไม่มีชื่อ'}</div>
+                        <div style="font-size:10.5px;color:#94a3b8;font-family:monospace;margin-top:2px;display:flex;align-items:center;gap:6px;">
+                            <span>${r.richMenuId.substring(0,14)}...</span>
+                            <button onclick="copyToClipboard('${r.richMenuId}')" title="คัดลอก ID" style="background:none;border:none;color:#6366f1;cursor:pointer;padding:2px;border-radius:4px;"><i class="fa-regular fa-copy"></i></button>
+                        </div>
+                    </td>
+                    <td class="hide-mobile">${statusBadge}</td>
+                    <td class="hide-mobile" style="color:#64748b;font-size:13px;">${date !== 'Invalid Date' ? date : '-'}</td>
+                    <td>
+                        <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px;">
+                            ${!isDefault ? `<button onclick="setDefaultRichMenu('${r.richMenuId}','${r.name}')" class="btn-outline-indigo">Set Default</button>` : ''}
+                            <button onclick="deleteRichMenu('${r.richMenuId}','${r.name}')" class="action-btn action-del"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>`;
+        }).join('');
+    }
+
+    /* ======== DELETE USER ======== */
+    async function deleteUser(userId) {
+        if (!confirm(`ยืนยันการลบ ID: ${userId} ?`)) return;
+        appData.users = appData.users.filter(u => u.userId !== userId);
+        renderUsers();
+        showToast('ลบผู้ใช้สำเร็จ', 'success');
+        if (isOnline) await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteUser', id: userId }) });
+    }
+
+    /* ======== RENDER USERS ======== */
+    function renderUsers() {
+        const search = document.getElementById('search-user').value.toLowerCase();
+        const tbody = document.getElementById('users-table-body');
+        const filtered = appData.users.filter(u => (u.name || '').toLowerCase().includes(search) || (u.userId || '').toLowerCase().includes(search));
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-users"></i></div><p>ไม่พบข้อมูลผู้ใช้</p></div></td></tr>`;
+            return;
+        }
+        tbody.innerHTML = filtered.map(u => {
+            const pic = u.pic
+                ? `<img src="${u.pic}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid #e8edf5;">`
+                : `<div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#e0e7ff,#c7d2fe);display:flex;align-items:center;justify-content:center;color:#6366f1;font-size:16px;flex-shrink:0;"><i class="fa-solid fa-user"></i></div>`;
+            const date = new Date(u.date).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+            return `
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            ${pic}
+                            <div>
+                                <div style="font-weight:600;color:#1e293b;">${u.name || 'ไม่ระบุชื่อ'}</div>
+                                <div style="font-size:10.5px;color:#94a3b8;font-family:monospace;margin-top:2px;">${u.userId}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="hide-mobile" style="font-size:13px;color:#64748b;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${u.status || '-'}</td>
+                    <td class="hide-mobile" style="color:#64748b;font-size:13px;">${date !== 'Invalid Date' ? date : '-'}</td>
+                    <td>
+                        <div style="display:flex;justify-content:flex-end;">
+                            <button onclick="deleteUser('${u.userId}')" class="action-btn action-del"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>`;
+        }).join('');
+    }
+
+    /* ======== ALIAS SYSTEM ======== */
+    async function createAlias() {
+        const aliasId = document.getElementById('form-alias-id').value.trim();
+        const rmId = document.getElementById('form-alias-rm').value.trim();
+        
+        if (!aliasId || !rmId) return showToast('กรุณากรอกข้อมูลให้ครบถ้วน', 'error');
+        if (!/^[a-z0-9_-]{1,32}$/.test(aliasId)) return showToast('Alias ID ต้องเป็นตัวพิมพ์เล็ก ตัวเลข - หรือ _ เท่านั้น และห้ามเกิน 32 ตัวอักษร', 'error');
+
+        const btn = document.getElementById('btn-save-alias');
+        btn.innerHTML = '<i class="fa-solid fa-spinner spin"></i> กำลังผูก...';
+        btn.disabled = true;
+
+        if (isOnline) {
+            try {
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'createAlias', aliasId, richMenuId: rmId }) });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    showToast('ผูก Alias สำเร็จ', 'success');
+                    document.getElementById('form-alias-id').value = '';
+                    document.getElementById('form-alias-rm').value = '';
+                    await fetchDataFromGAS();
+                } else {
+                    showToast('Error: ' + result.message, 'error');
+                }
+            } catch (e) {
+                showToast('เชื่อมต่อผิดพลาด', 'error');
+            }
+        }
+        btn.innerHTML = '<i class="fa-solid fa-link"></i> ผูก Alias';
+        btn.disabled = false;
+    }
+
+    async function deleteAlias(aliasId) {
+        if (!confirm(`ยืนยันการลบ Alias: ${aliasId} ?`)) return;
+        
+        const rowId = 'alias-row-' + aliasId;
+        const rowEl = document.getElementById(rowId);
+        if(rowEl) rowEl.style.opacity = '0.5';
+
+        if (isOnline) {
+            try {
+                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteAlias', aliasId }) });
+                const result = await res.json();
+                if (result.status === 'success') {
+                    showToast('ลบ Alias สำเร็จ', 'success');
+                    await fetchDataFromGAS();
+                } else {
+                    showToast('Error: ' + result.message, 'error');
+                    if(rowEl) rowEl.style.opacity = '1';
+                }
+            } catch (e) {
+                showToast('เชื่อมต่อผิดพลาด', 'error');
+                if(rowEl) rowEl.style.opacity = '1';
+            }
+        }
+    }
+
+    function renderAliases() {
+        const container = document.getElementById('aliases-list-container');
+        if (!appData.aliases || appData.aliases.length === 0) {
+            container.innerHTML = `<div style="color:#94a3b8; font-size:13.5px; padding:20px 0; text-align:center;">ยังไม่มีข้อมูล Alias</div>`;
+            return;
+        }
+
+        container.innerHTML = appData.aliases.map(a => `
+            <div id="alias-row-${a.richMenuAliasId}" style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #f1f5f9; transition: opacity 0.2s;">
+                <div>
+                    <div style="font-weight:600; color:#1e293b; font-size:14px; margin-bottom:2px;">${a.richMenuAliasId}</div>
+                    <div style="font-size:11.5px; color:#64748b; font-family:monospace;"><i class="fa-solid fa-arrow-turn-down fa-rotate-270" style="margin-right:4px;"></i>${a.richMenuId}</div>
+                </div>
+                <button onclick="deleteAlias('${a.richMenuAliasId}')" class="action-btn action-del" style="background:#fff1f2;"><i class="fa-solid fa-trash"></i></button>
+            </div>
+        `).join('');
+    }
+
+    /* ======== CLOSE MODAL ON BACKDROP CLICK ======== */
+    document.getElementById('keyword-modal').addEventListener('click', function(e) { if (e.target === this) closeKeywordModal(); });
+    document.getElementById('richmenu-modal').addEventListener('click', function(e) { if (e.target === this) closeRichMenuModal(); });
+</script>
+</body>
+</html>

@@ -119,9 +119,9 @@
                                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                         <i class="fa-solid fa-id-badge text-slate-500"></i>
                                     </div>
-                                    <input type="text" id="student-id" name="studentId" required pattern="\d{5}" maxlength="5" title="กรุณากรอกรหัสนักเรียนเป็นตัวเลข 5 หลัก" placeholder="เช่น 12345" 
+                                    <input type="text" id="student-id" name="studentId" required title="กรุณากรอกรหัสนักเรียนเป็นตัวเลข 5 หรือ 11 หลัก" placeholder="เช่น 12345" 
                                         class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-slate-700 bg-slate-900/50 focus:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-pink-500/20 focus:border-pink-500 shadow-sm transition-all font-medium text-white placeholder-slate-500"
-                                        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 5)">
+                                        >
                                 </div>
                             </div>
                             
@@ -297,10 +297,10 @@
             const fullName = document.getElementById('full-name').value.trim();
             const details = document.getElementById('issue-details').value.trim();
             
-            if(studentId.length !== 5) {
-                alert("รหัสนักเรียนต้องมี 5 หลักพอดี");
-                return;
-            }
+            // if(studentId.length !== 5) {
+            //     alert("รหัสนักเรียนต้องมี 5 หรือ 11 หลักพอดี");
+            //     return;
+            // }
 
             const btn = document.getElementById('btn-submit');
             const textSubmit = document.getElementById('text-submit');

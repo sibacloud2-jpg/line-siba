@@ -865,15 +865,12 @@
 </head>
 <body>
 
-<!-- Toast Container -->
 <div class="toast-container" id="toast-container"></div>
 
-<!-- Sidebar Overlay (Mobile) -->
 <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <div class="app-layout">
 
-    <!-- ========== SIDEBAR ========== -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-logo">
             <div class="sidebar-logo-icon">
@@ -888,7 +885,12 @@
         <nav class="sidebar-nav">
             <span class="nav-section-label">เมนูหลัก</span>
 
-            <button onclick="switchTab('keywords')" id="tab-btn-keywords" class="nav-item active">
+            <button onclick="switchTab('services')" id="tab-btn-services" class="nav-item active">
+                <div class="nav-icon-wrap"><i class="fa-solid fa-headset"></i></div>
+                รายการแจ้งปัญหา
+            </button>
+
+            <button onclick="switchTab('keywords')" id="tab-btn-keywords" class="nav-item">
                 <div class="nav-icon-wrap"><i class="fa-solid fa-comment-dots"></i></div>
                 จัดการ Keyword
             </button>
@@ -920,18 +922,16 @@
         </div>
     </aside>
 
-    <!-- ========== MAIN CONTENT ========== -->
     <main class="main-content">
 
-        <!-- Header -->
         <header class="main-header">
             <div class="header-left">
                 <button class="hamburger-btn" id="hamburger-btn" onclick="toggleSidebar()">
                     <i class="fa-solid fa-bars"></i>
                 </button>
                 <div class="page-title-wrap">
-                    <div class="page-title" id="page-title">จัดการ Keyword ตอบกลับ</div>
-                    <div class="page-subtitle" id="page-subtitle">ตั้งค่าการตอบกลับอัตโนมัติ</div>
+                    <div class="page-title" id="page-title">รายการแจ้งปัญหา</div>
+                    <div class="page-subtitle" id="page-subtitle">จัดการสถานะการแจ้งปัญหา MS Teams</div>
                 </div>
             </div>
             <div class="header-right">
@@ -941,11 +941,32 @@
             </div>
         </header>
 
-        <!-- Content Area -->
         <div class="content-area">
 
-            <!-- Tab: Keywords -->
-            <div id="tab-keywords" class="tab-content active">
+            <div id="tab-services" class="tab-content active">
+                <div class="content-toolbar">
+                    <div class="search-wrapper">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="search-service" onkeyup="renderServices()" placeholder="ค้นหารหัสนักเรียน, ชื่อ หรือปัญหา..." class="search-input">
+                    </div>
+                </div>
+                <div class="table-card">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>รหัสฯ / ชื่อ-สกุล</th>
+                                <th class="hide-mobile">รายละเอียดปัญหา</th>
+                                <th>สถานะ</th>
+                                <th class="hide-mobile">วันที่แจ้ง</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="services-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-keywords" class="tab-content">
                 <div class="content-toolbar">
                     <div class="search-wrapper">
                         <i class="fa-solid fa-magnifying-glass search-icon"></i>
@@ -970,7 +991,6 @@
                 </div>
             </div>
 
-            <!-- Tab: Rich Menus -->
             <div id="tab-richmenus" class="tab-content">
                 <div class="content-toolbar">
                     <div class="search-wrapper">
@@ -997,7 +1017,6 @@
                 </div>
             </div>
 
-            <!-- Tab: Aliases -->
             <div id="tab-aliases" class="tab-content">
                 <div class="info-box" style="margin-bottom: 24px; padding: 20px; border-radius: 16px;">
                     <div style="display:flex; gap:12px; margin-bottom: 12px;">
@@ -1021,7 +1040,6 @@
                 </div>
 
                 <div class="form-grid-2" style="gap:24px; align-items:start;">
-                    <!-- Left: Create Form -->
                     <div class="table-card" style="padding: 24px;">
                         <div style="font-weight:700; color:#1e293b; font-size:15px; margin-bottom: 20px;">สร้าง Alias ใหม่</div>
                         <div class="form-group">
@@ -1035,7 +1053,6 @@
                         </button>
                     </div>
 
-                    <!-- Right: List -->
                     <div class="table-card" style="padding: 24px; min-height:260px;">
                         <div style="font-weight:700; color:#1e293b; font-size:15px; margin-bottom: 20px;">รายการ Alias ปัจจุบัน</div>
                         <div id="aliases-list-container">
@@ -1047,7 +1064,6 @@
                 </div>
             </div>
 
-            <!-- Tab: Users -->
             <div id="tab-users" class="tab-content">
                 <div class="content-toolbar">
                     <div class="search-wrapper">
@@ -1074,7 +1090,35 @@
     </main>
 </div>
 
-<!-- ======================== MODAL: Keyword ======================== -->
+<div id="service-modal" class="modal-backdrop" style="display:none;">
+    <div class="modal-box" id="service-modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fa-solid fa-pen-to-square mr-2 text-pink-500"></i>อัปเดตสถานะปัญหา</h3>
+            <button onclick="closeServiceModal()" class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="form-service-row">
+            <div class="form-section">
+                <div class="form-group">
+                    <label class="form-label">เลือกสถานะใหม่</label>
+                    <select id="form-service-status" class="form-select">
+                        <option value="รับเรื่องแล้ว">รับเรื่องแล้ว</option>
+                        <option value="อยู่ระหว่างดำเนินการ">อยู่ระหว่างดำเนินการ</option>
+                        <option value="ดำเนินการแล้วเสร็จ">ดำเนินการแล้วเสร็จ</option>
+                        <option value="แจ้งผล ผู้ใช้">แจ้งผล ผู้ใช้</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeServiceModal()" class="btn btn-ghost">ยกเลิก</button>
+            <button onclick="saveServiceStatus()" id="btn-save-service" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk"></i> บันทึกสถานะ
+            </button>
+        </div>
+    </div>
+</div>
+
 <div id="keyword-modal" class="modal-backdrop" style="display:none;">
     <div class="modal-box" id="keyword-modal-content">
         <div class="modal-header">
@@ -1121,7 +1165,6 @@
                 </label>
             </div>
 
-            <!-- 1. Text -->
             <div id="input-group-text" class="input-group">
                 <div class="form-group">
                     <label class="form-label">ข้อความที่ต้องการตอบกลับ</label>
@@ -1129,7 +1172,6 @@
                 </div>
             </div>
 
-            <!-- 2. Image -->
             <div id="input-group-image" class="input-group" style="display:none">
                 <div class="form-group">
                     <label class="form-label">URL รูปภาพจริง (Original Content URL)</label>
@@ -1141,7 +1183,6 @@
                 </div>
             </div>
 
-            <!-- 3. Flex -->
             <div id="input-group-flex" class="input-group" style="display:none">
                 <div class="form-group">
                     <label class="form-label">ข้อความแจ้งเตือน (Alt Text)</label>
@@ -1153,7 +1194,6 @@
                 </div>
             </div>
 
-            <!-- 4. Imagemap -->
             <div id="input-group-imagemap" class="input-group" style="display:none">
                 <div class="info-box">
                     <i class="fa-solid fa-circle-info" style="flex-shrink:0;margin-top:1px;"></i>
@@ -1179,7 +1219,6 @@
                 </div>
             </div>
 
-            <!-- 5. Raw JSON -->
             <div id="input-group-raw" class="input-group" style="display:none">
                 <div class="form-group">
                     <label class="form-label">JSON Payload (เต็มรูปแบบ)</label>
@@ -1197,7 +1236,6 @@
     </div>
 </div>
 
-<!-- ======================== MODAL: Rich Menu ======================== -->
 <div id="richmenu-modal" class="modal-backdrop" style="display:none;">
     <div class="modal-box" id="richmenu-modal-content">
         <div class="modal-header">
@@ -1247,13 +1285,14 @@
 <!-- ======================== SCRIPT ======================== -->
 <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyVOsbpN8CmJVZ7_4fiQVmSx8OokTGrG72kmYXcgcw7vjAT2ih3bmfJGnlNgsmwMf3VBQ/exec';
-    let appData = { keywords: [], users: [], richMenus: [], aliases: [] };
+    const SERVICE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwzp8cRVZl1oFGAJXpYX5wVncj11g29DlOQJUnyWUQ25AVtJqf3XmAnB1vM-cOaMAg2/exec';
+    
+    let appData = { keywords: [], users: [], richMenus: [], aliases: [], services: [] }; 
     let isOnline = false;
     let selectedRichMenuBase64 = null;
 
     window.onload = () => { fetchDataFromGAS(); };
 
-    /* ======== SIDEBAR MOBILE ======== */
     function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('sidebar-open');
         document.getElementById('sidebar-overlay').classList.toggle('sidebar-overlay-show');
@@ -1263,8 +1302,7 @@
         document.getElementById('sidebar-overlay').classList.remove('sidebar-overlay-show');
     }
 
-    /* ======== TOAST ======== */
-    function showToast(message, type = 'info', duration = 3200) {
+    function showToast(message, type = 'info', duration = 4000) {
         const container = document.getElementById('toast-container');
         const icons = {
             success: '<i class="fa-solid fa-check"></i>',
@@ -1285,7 +1323,6 @@
         return el;
     }
 
-    /* ======== TAB SWITCHING ======== */
     function switchTab(tabName) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.getElementById(`tab-${tabName}`).classList.add('active');
@@ -1293,6 +1330,7 @@
         document.getElementById(`tab-btn-${tabName}`).classList.add('active');
 
         const cfg = {
+            services:  ['รายการแจ้งปัญหา', 'จัดการสถานะการแจ้งปัญหา MS Teams'],
             keywords:  ['จัดการ Keyword ตอบกลับ', 'ตั้งค่าการตอบกลับอัตโนมัติ'],
             richmenus: ['จัดการ Rich Menu', 'สร้างและจัดการภาพปก Rich Menu'],
             aliases:   ['ระบบ Alias', 'เชื่อมโยง Rich Menu สำหรับสลับหน้า'],
@@ -1303,38 +1341,198 @@
         closeSidebar();
     }
 
-    /* ======== FETCH DATA ======== */
+    // ฟังก์ชันช่วยตรวจสอบ Error หาก API ไม่ตอบกลับเป็น JSON
+    async function safeFetchJson(url, options = {}) {
+        try {
+            const res = await fetch(url, options);
+            const text = await res.text();
+            try {
+                return JSON.parse(text);
+            } catch(e) {
+                console.error("API ไม่ได้ตอบกลับเป็น JSON. ข้อมูลที่ได้รับคือ:", text);
+                return { status: 'error', message: 'API ผิดพลาด (อาจเกิดจากยังไม่ได้ Deploy เป็น New Version หรือลืมตั้งสิทธิ์เป็น Anyone)' };
+            }
+        } catch(e) {
+            console.error("Network Error:", e);
+            return { status: 'error', message: 'การเชื่อมต่อถูกบล็อก หรืออินเทอร์เน็ตมีปัญหา' };
+        }
+    }
+
     async function fetchDataFromGAS() {
         if (SCRIPT_URL.includes('ใส่_URL')) return;
         const btn = document.getElementById('refresh-btn');
         btn.classList.add('spinning');
+        
         try {
-            const res = await fetch(`${SCRIPT_URL}?action=getData`);
-            const json = await res.json();
-            if (json.status === 'success') {
-                appData = json.data;
+            // โหลดข้อมูลจาก 2 แหล่งพร้อมกันอย่างปลอดภัย
+            let botSuccess = false;
+            try {
+                const resBot = await fetch(`${SCRIPT_URL}?action=getData`);
+                const jsonBot = await resBot.json();
+                if (jsonBot.status === 'success') {
+                    appData.keywords = jsonBot.data.keywords || [];
+                    appData.richMenus = jsonBot.data.richMenus || [];
+                    appData.aliases = jsonBot.data.aliases || [];
+                    appData.users = jsonBot.data.users || [];
+                    botSuccess = true;
+                } else {
+                    showToast('โหลดข้อมูล Bot ไม่สำเร็จ: ' + (jsonBot.message || ''), 'error');
+                }
+            } catch(e) {
+                showToast('ดึงข้อมูลระบบ Bot ไม่ได้ (เช็คการตั้งค่า API)', 'error');
+            }
+
+            let serviceSuccess = false;
+            try {
+                const resService = await fetch(SERVICE_SCRIPT_URL);
+                const jsonService = await resService.json();
+                if (jsonService.status === 'success') {
+                    appData.services = jsonService.data || [];
+                    serviceSuccess = true;
+                } else {
+                    showToast('โหลดข้อมูลแจ้งปัญหาไม่สำเร็จ: ' + (jsonService.message || ''), 'error');
+                }
+            } catch(e) {
+                showToast('ดึงข้อมูลแจ้งปัญหาไม่ได้ (เช็คการตั้งค่า API)', 'error');
+            }
+
+            if (botSuccess || serviceSuccess) {
                 isOnline = true;
-                document.getElementById('system-status').innerHTML =
-                    `<div class="status-dot"></div><span>Online (API)</span>`;
+                document.getElementById('system-status').innerHTML = `<div class="status-dot"></div><span>Online</span>`;
+                
+                renderServices(); 
                 renderKeywords(); renderRichMenus(); renderUsers(); renderAliases();
                 showToast('โหลดข้อมูลสำเร็จ', 'success', 2200);
+            } else {
+                throw new Error("Cannot load from both APIs");
             }
+
         } catch (e) {
-            document.getElementById('system-status').innerHTML =
-                `<div class="status-dot" style="background:#f43f5e;box-shadow:0 0 0 3px rgba(244,63,94,0.2);"></div><span style="color:#f43f5e;">Offline</span>`;
+            document.getElementById('system-status').innerHTML = `<div class="status-dot" style="background:#f43f5e;box-shadow:0 0 0 3px rgba(244,63,94,0.2);"></div><span style="color:#f43f5e;">Offline</span>`;
         } finally {
             btn.classList.remove('spinning');
         }
     }
 
-    /* ======== TOGGLE FORM INPUTS ======== */
+    function getServiceBadge(status) {
+        if(status === 'รับเรื่องแล้ว') return `<span class="badge b-blue"><i class="fa-solid fa-inbox"></i> รับเรื่องแล้ว</span>`;
+        if(status === 'อยู่ระหว่างดำเนินการ') return `<span class="badge b-org"><i class="fa-solid fa-spinner spin"></i> กำลังดำเนินการ</span>`;
+        if(status === 'ดำเนินการแล้วเสร็จ') return `<span class="badge b-green"><i class="fa-solid fa-check"></i> แล้วเสร็จ</span>`;
+        if(status === 'แจ้งผล ผู้ใช้') return `<span class="badge b-pink"><i class="fa-solid fa-bullhorn"></i> แจ้งผล</span>`;
+        return `<span class="badge b-gray">${status || '-'}</span>`;
+    }
+
+    function renderServices() {
+        const search = document.getElementById('search-service').value.toLowerCase();
+        const tbody = document.getElementById('services-table-body');
+        const dataList = appData.services || [];
+        
+        // แก้ไขจุดบกพร่องเรื่อง TypeError .toLowerCase() บน Number
+        const filtered = dataList.filter(s => {
+            const stId = s.studentId != null ? String(s.studentId).toLowerCase() : '';
+            const fName = s.fullName != null ? String(s.fullName).toLowerCase() : '';
+            const det = s.details != null ? String(s.details).toLowerCase() : '';
+            return stId.includes(search) || fName.includes(search) || det.includes(search);
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-clipboard-check"></i></div><p>ไม่มีรายการแจ้งปัญหา</p></div></td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered.map(s => {
+            const date = new Date(s.timestamp).toLocaleDateString('th-TH', { year: '2-digit', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            return `
+                <tr>
+                    <td>
+                        <div style="font-weight:600;color:#1e293b;font-size:13.5px;">${s.fullName}</div>
+                        <div style="font-size:11px;color:#64748b;font-family:monospace;margin-top:2px;">${s.studentId}</div>
+                    </td>
+                    <td class="hide-mobile" style="max-width:250px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${s.details}">${s.details}</td>
+                    <td>${getServiceBadge(s.status)}</td>
+                    <td class="hide-mobile" style="color:#64748b;font-size:12.5px;">${date !== 'Invalid Date' ? date : '-'}</td>
+                    <td>
+                        <div style="display:flex;align-items:center;justify-content:flex-end;gap:3px;">
+                            <button onclick="openServiceModal('${s.rowNumber}', '${s.status}')" class="action-btn action-edit" title="แก้ไขสถานะ"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteService('${s.rowNumber}')" class="action-btn action-del" title="ลบ"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>`;
+        }).join('');
+    }
+
+    function openServiceModal(rowNumber, currentStatus) {
+        document.getElementById('form-service-row').value = rowNumber;
+        const selectEl = document.getElementById('form-service-status');
+        let found = Array.from(selectEl.options).some(opt => opt.value === currentStatus);
+        selectEl.value = found ? currentStatus : 'รับเรื่องแล้ว';
+
+        const modal = document.getElementById('service-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('modal-show'), 10);
+    }
+
+    function closeServiceModal() {
+        const modal = document.getElementById('service-modal');
+        modal.classList.remove('modal-show');
+        setTimeout(() => { modal.style.display = 'none'; }, 300);
+    }
+
+    async function saveServiceStatus() {
+        const rowNum = document.getElementById('form-service-row').value;
+        const newStatus = document.getElementById('form-service-status').value;
+        if(!rowNum) return;
+
+        const btn = document.getElementById('btn-save-service');
+        btn.innerHTML = '<i class="fa-solid fa-spinner spin"></i> กำลังบันทึก...';
+        btn.disabled = true;
+
+        if (isOnline) {
+            const result = await safeFetchJson(SERVICE_SCRIPT_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: 'updateStatus', rowNumber: rowNum, status: newStatus }) 
+            });
+            
+            if (result.status === 'success') {
+                const serviceIndex = appData.services.findIndex(s => s.rowNumber == rowNum);
+                if(serviceIndex !== -1) appData.services[serviceIndex].status = newStatus;
+                renderServices();
+                showToast('อัปเดตสถานะสำเร็จ', 'success');
+            } else {
+                showToast('Error: ' + result.message, 'error');
+            }
+        }
+        
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> บันทึกสถานะ';
+        btn.disabled = false;
+        closeServiceModal();
+    }
+
+    async function deleteService(rowNum) {
+        if (!confirm(`ยืนยันการลบรายการแจ้งปัญหานี้? (แถวที่ ${rowNum})`)) return;
+        
+        if (isOnline) {
+            const result = await safeFetchJson(SERVICE_SCRIPT_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: 'deleteService', rowNumber: rowNum }) 
+            });
+
+            if (result.status === 'success') {
+                appData.services = appData.services.filter(s => s.rowNumber != rowNum);
+                renderServices();
+                showToast('ลบรายการสำเร็จ', 'success');
+            } else {
+                showToast('Error: ' + result.message, 'error');
+            }
+        }
+    }
+
     function toggleFormInputs() {
         const msgType = document.getElementById('form-msgtype').value;
         document.querySelectorAll('.input-group').forEach(el => el.style.display = 'none');
         document.getElementById(`input-group-${msgType}`).style.display = 'block';
     }
 
-    /* ======== UPLOAD IMAGEMAP IMAGE ======== */
     async function uploadImagemapImage() {
         const fileInput = document.getElementById('form-im-image');
         const file = fileInput.files[0];
@@ -1342,27 +1540,26 @@
         const btn = document.getElementById('btn-upload-im');
         const loadingToast = showToast('กำลังอัปโหลดรูปภาพ...', 'loading', 0);
         btn.disabled = true;
+        
         const reader = new FileReader();
         reader.onload = async function(e) {
-            try {
-                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'uploadImagemapImage', imageBase64: e.target.result }) });
-                const result = await res.json();
-                loadingToast.remove();
-                if (result.status === 'success') {
-                    document.getElementById('form-im-baseurl').value = result.baseUrl;
-                    showToast('อัปโหลดรูปภาพสำเร็จ!', 'success');
-                } else {
-                    showToast('Error: ' + result.message, 'error');
-                }
-            } catch (err) {
-                loadingToast.remove();
-                showToast('เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
-            } finally { btn.disabled = false; }
+            const result = await safeFetchJson(SCRIPT_URL, { 
+                method: 'POST', 
+                body: JSON.stringify({ action: 'uploadImagemapImage', imageBase64: e.target.result }) 
+            });
+            loadingToast.remove();
+            
+            if (result.status === 'success') {
+                document.getElementById('form-im-baseurl').value = result.baseUrl;
+                showToast('อัปโหลดรูปภาพสำเร็จ!', 'success');
+            } else {
+                showToast('Error: ' + result.message, 'error');
+            }
+            btn.disabled = false;
         };
         reader.readAsDataURL(file);
     }
 
-    /* ======== BUILD PAYLOAD FROM FORM ======== */
     function buildPayloadFromForm() {
         const msgType = document.getElementById('form-msgtype').value;
         const showLoading = document.getElementById('form-show-loading').checked;
@@ -1393,7 +1590,6 @@
         }
     }
 
-    /* ======== PARSE PAYLOAD TO FORM ======== */
     function parsePayloadToForm(payloadStr) {
         try {
             const parsedObj = JSON.parse(payloadStr);
@@ -1432,7 +1628,6 @@
         toggleFormInputs();
     }
 
-    /* ======== KEYWORD MODAL ======== */
     function openKeywordModal(editKeyword = null) {
         ['form-keyword','form-text-input','form-img-original','form-img-preview',
          'form-flex-alt','form-flex-json','form-im-baseurl','form-im-alt',
@@ -1469,7 +1664,6 @@
         setTimeout(() => { modal.style.display = 'none'; }, 300);
     }
 
-    /* ======== SAVE KEYWORD ======== */
     async function saveKeyword() {
         const originalKw = document.getElementById('original-keyword').value;
         const kw = document.getElementById('form-keyword').value.trim();
@@ -1486,24 +1680,28 @@
         closeKeywordModal();
         showToast(originalKw ? 'แก้ไข Keyword สำเร็จ!' : 'เพิ่ม Keyword ใหม่สำเร็จ!', 'success');
         if (isOnline) {
-            await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'saveKeyword', originalKw, keyword: kw, matchType: mt, payload: finalPayload }) });
+            await safeFetchJson(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'saveKeyword', originalKw, keyword: kw, matchType: mt, payload: finalPayload }) });
         }
     }
 
-    /* ======== DELETE KEYWORD ======== */
     async function deleteKeyword(kw) {
         if (!confirm(`ยืนยันการลบ Keyword: ${kw} ?`)) return;
         appData.keywords = appData.keywords.filter(k => k.keyword !== kw);
         renderKeywords();
         showToast(`ลบ Keyword "${kw}" สำเร็จ`, 'success');
-        if (isOnline) await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteKeyword', id: kw }) });
+        if (isOnline) await safeFetchJson(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteKeyword', id: kw }) });
     }
 
-    /* ======== RENDER KEYWORDS ======== */
     function renderKeywords() {
         const search = document.getElementById('search-keyword').value.toLowerCase();
         const tbody = document.getElementById('keywords-table-body');
-        const filtered = appData.keywords.filter(k => k.keyword.toLowerCase().includes(search));
+        const dataList = appData.keywords || [];
+        
+        const filtered = dataList.filter(k => {
+            const kw = k.keyword != null ? String(k.keyword).toLowerCase() : '';
+            return kw.includes(search);
+        });
+
         if (filtered.length === 0) {
             tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-comment-slash"></i></div><p>ไม่พบข้อมูล Keyword</p></div></td></tr>`;
             return;
@@ -1540,7 +1738,6 @@
         }).join('');
     }
 
-    /* ======== RICH MENU MODAL ======== */
     function openRichMenuModal() {
         document.getElementById('form-rm-json').value = '';
         document.getElementById('form-rm-image').value = '';
@@ -1586,22 +1783,23 @@
         btn.innerHTML = '<i class="fa-solid fa-spinner spin"></i><span>กำลังสร้าง...</span>';
         btn.disabled = true;
         const loadingToast = showToast('กำลังสร้าง Rich Menu...', 'loading', 0);
-        try {
-            const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'createRichMenu', payload: parsedJson, imageBase64: selectedRichMenuBase64, setAsDefault }) });
-            const result = await response.json();
-            loadingToast.remove();
-            if (result.status === 'success') {
-                await fetchDataFromGAS();
-                closeRichMenuModal();
-                showToast('สร้าง Rich Menu สำเร็จ!', 'success');
-            } else { showToast('Error: ' + result.message, 'error'); }
-        } catch (error) {
-            loadingToast.remove();
-            showToast('เชื่อมต่อผิดพลาด', 'error');
-        } finally {
-            btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i><span>สร้าง และ อัปโหลด</span>';
-            btn.disabled = false;
+        
+        const result = await safeFetchJson(SCRIPT_URL, { 
+            method: 'POST', 
+            body: JSON.stringify({ action: 'createRichMenu', payload: parsedJson, imageBase64: selectedRichMenuBase64, setAsDefault }) 
+        });
+        
+        loadingToast.remove();
+        if (result.status === 'success') {
+            await fetchDataFromGAS();
+            closeRichMenuModal();
+            showToast('สร้าง Rich Menu สำเร็จ!', 'success');
+        } else { 
+            showToast('Error: ' + result.message, 'error'); 
         }
+        
+        btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i><span>สร้าง และ อัปโหลด</span>';
+        btn.disabled = false;
     }
 
     async function deleteRichMenu(id, name) {
@@ -1609,7 +1807,7 @@
         appData.richMenus = appData.richMenus.filter(r => r.richMenuId !== id);
         renderRichMenus();
         showToast(`ลบ Rich Menu "${name || id}" สำเร็จ`, 'success');
-        if (isOnline) await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteRichMenu', id }) });
+        if (isOnline) await safeFetchJson(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteRichMenu', id }) });
     }
 
     async function setDefaultRichMenu(id, name) {
@@ -1617,10 +1815,9 @@
         appData.richMenus = appData.richMenus.map(r => ({ ...r, status: r.richMenuId === id ? 'Default' : 'Active' }));
         renderRichMenus();
         showToast('ตั้งค่า Default Rich Menu สำเร็จ', 'success');
-        if (isOnline) await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'setDefaultRichMenu', id }) });
+        if (isOnline) await safeFetchJson(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'setDefaultRichMenu', id }) });
     }
 
-    /* ======== COPY TO CLIPBOARD ======== */
     function copyToClipboard(text) {
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(text).then(() => showToast('คัดลอก ID เรียบร้อย', 'success', 2000));
@@ -1641,11 +1838,17 @@
         }
     }
 
-    /* ======== RENDER RICH MENUS ======== */
     function renderRichMenus() {
         const search = document.getElementById('search-richmenu').value.toLowerCase();
         const tbody = document.getElementById('richmenus-table-body');
-        const filtered = (appData.richMenus || []).filter(r => (r.name || '').toLowerCase().includes(search) || r.richMenuId.toLowerCase().includes(search));
+        const dataList = appData.richMenus || [];
+
+        const filtered = dataList.filter(r => {
+            const n = r.name != null ? String(r.name).toLowerCase() : '';
+            const id = r.richMenuId != null ? String(r.richMenuId).toLowerCase() : '';
+            return n.includes(search) || id.includes(search);
+        });
+
         if (filtered.length === 0) {
             tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-table-cells-large"></i></div><p>ยังไม่มีข้อมูล Rich Menu</p></div></td></tr>`;
             return;
@@ -1685,20 +1888,25 @@
         }).join('');
     }
 
-    /* ======== DELETE USER ======== */
     async function deleteUser(userId) {
         if (!confirm(`ยืนยันการลบ ID: ${userId} ?`)) return;
         appData.users = appData.users.filter(u => u.userId !== userId);
         renderUsers();
         showToast('ลบผู้ใช้สำเร็จ', 'success');
-        if (isOnline) await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteUser', id: userId }) });
+        if (isOnline) await safeFetchJson(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteUser', id: userId }) });
     }
 
-    /* ======== RENDER USERS ======== */
     function renderUsers() {
         const search = document.getElementById('search-user').value.toLowerCase();
         const tbody = document.getElementById('users-table-body');
-        const filtered = appData.users.filter(u => (u.name || '').toLowerCase().includes(search) || (u.userId || '').toLowerCase().includes(search));
+        const dataList = appData.users || [];
+
+        const filtered = dataList.filter(u => {
+            const n = u.name != null ? String(u.name).toLowerCase() : '';
+            const id = u.userId != null ? String(u.userId).toLowerCase() : '';
+            return n.includes(search) || id.includes(search);
+        });
+
         if (filtered.length === 0) {
             tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="empty-icon"><i class="fa-solid fa-users"></i></div><p>ไม่พบข้อมูลผู้ใช้</p></div></td></tr>`;
             return;
@@ -1730,7 +1938,6 @@
         }).join('');
     }
 
-    /* ======== ALIAS SYSTEM ======== */
     async function createAlias() {
         const aliasId = document.getElementById('form-alias-id').value.trim();
         const rmId = document.getElementById('form-alias-rm').value.trim();
@@ -1743,19 +1950,14 @@
         btn.disabled = true;
 
         if (isOnline) {
-            try {
-                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'createAlias', aliasId, richMenuId: rmId }) });
-                const result = await res.json();
-                if (result.status === 'success') {
-                    showToast('ผูก Alias สำเร็จ', 'success');
-                    document.getElementById('form-alias-id').value = '';
-                    document.getElementById('form-alias-rm').value = '';
-                    await fetchDataFromGAS();
-                } else {
-                    showToast('Error: ' + result.message, 'error');
-                }
-            } catch (e) {
-                showToast('เชื่อมต่อผิดพลาด', 'error');
+            const result = await safeFetchJson(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'createAlias', aliasId, richMenuId: rmId }) });
+            if (result.status === 'success') {
+                showToast('ผูก Alias สำเร็จ', 'success');
+                document.getElementById('form-alias-id').value = '';
+                document.getElementById('form-alias-rm').value = '';
+                await fetchDataFromGAS();
+            } else {
+                showToast('Error: ' + result.message, 'error');
             }
         }
         btn.innerHTML = '<i class="fa-solid fa-link"></i> ผูก Alias';
@@ -1770,18 +1972,12 @@
         if(rowEl) rowEl.style.opacity = '0.5';
 
         if (isOnline) {
-            try {
-                const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteAlias', aliasId }) });
-                const result = await res.json();
-                if (result.status === 'success') {
-                    showToast('ลบ Alias สำเร็จ', 'success');
-                    await fetchDataFromGAS();
-                } else {
-                    showToast('Error: ' + result.message, 'error');
-                    if(rowEl) rowEl.style.opacity = '1';
-                }
-            } catch (e) {
-                showToast('เชื่อมต่อผิดพลาด', 'error');
+            const result = await safeFetchJson(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteAlias', aliasId }) });
+            if (result.status === 'success') {
+                showToast('ลบ Alias สำเร็จ', 'success');
+                await fetchDataFromGAS();
+            } else {
+                showToast('Error: ' + result.message, 'error');
                 if(rowEl) rowEl.style.opacity = '1';
             }
         }
@@ -1789,12 +1985,14 @@
 
     function renderAliases() {
         const container = document.getElementById('aliases-list-container');
-        if (!appData.aliases || appData.aliases.length === 0) {
+        const dataList = appData.aliases || [];
+
+        if (dataList.length === 0) {
             container.innerHTML = `<div style="color:#94a3b8; font-size:13.5px; padding:20px 0; text-align:center;">ยังไม่มีข้อมูล Alias</div>`;
             return;
         }
 
-        container.innerHTML = appData.aliases.map(a => `
+        container.innerHTML = dataList.map(a => `
             <div id="alias-row-${a.richMenuAliasId}" style="display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid #f1f5f9; transition: opacity 0.2s;">
                 <div>
                     <div style="font-weight:600; color:#1e293b; font-size:14px; margin-bottom:2px;">${a.richMenuAliasId}</div>
@@ -1806,6 +2004,7 @@
     }
 
     /* ======== CLOSE MODAL ON BACKDROP CLICK ======== */
+    document.getElementById('service-modal').addEventListener('click', function(e) { if (e.target === this) closeServiceModal(); });
     document.getElementById('keyword-modal').addEventListener('click', function(e) { if (e.target === this) closeKeywordModal(); });
     document.getElementById('richmenu-modal').addEventListener('click', function(e) { if (e.target === this) closeRichMenuModal(); });
 </script>
